@@ -1,0 +1,87 @@
+document.addEventListener("DOMContentLoaded", function () {
+    const productList = document.getElementById("product-list");
+    const cartItems = document.getElementById("cart-items");
+    const totalPrice = document.getElementById("total-price");
+    const categoryFilter = document.getElementById("category-filter");
+    const priceFilter = document.getElementById("price-filter");
+
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    // Товары магазина
+    const products = [
+        { id: 1, name: "Платье", price: 2500, category: "clothing" },
+        { id: 2, name: "Сумка", price: 1500, category: "accessories" },
+        { id: 3, name: "Куртка", price: 5000, category: "clothing" },
+        { id: 4, name: "Часы", price: 3500, category: "accessories" }
+    ];
+
+    // Отображение товаров
+    function displayProducts() {
+        productList.innerHTML = "";
+        products.forEach(product => {
+            if (categoryFilter.value !== "all" && product.category !== categoryFilter.value) return;
+            if (priceFilter.value && product.price > priceFilter.value) return;
+
+            const productElement = document.createElement("div");
+            productElement.classList.add("product");
+            productElement.innerHTML = `
+                <h3>${product.name}</h3>
+                <p>Цена: ${product.price} руб.</p>
+                <button onclick="addToCart(${product.id})">Добавить в корзину</button>
+            `;
+            productList.appendChild(productElement);
+        });
+    }
+
+    // Добавление в корзину
+    window.addToCart = function (id) {
+        const product = products.find(p => p.id === id);
+        cart.push(product);
+        saveCart();
+        updateCart();
+    };
+
+    // Обновление корзины
+    function updateCart() {
+        cartItems.innerHTML = "";
+        let total = 0;
+
+        cart.forEach((item, index) => {
+            let li = document.createElement("li");
+            li.innerHTML = `${item.name} - ${item.price} руб. 
+                <button onclick="removeFromCart(${index})">Удалить</button>`;
+            cartItems.appendChild(li);
+            total += item.price;
+        });
+
+        totalPrice.textContent = total;
+    }
+
+    // Удаление из корзины
+    window.removeFromCart = function (index) {
+        cart.splice(index, 1);
+        saveCart();
+        updateCart();
+    };
+
+    // Очистка корзины
+    window.clearCart = function () {
+        cart = [];
+        saveCart();
+        updateCart();
+    };
+
+    // Фильтрация товаров
+    window.filterProducts = function () {
+        displayProducts();
+    };
+
+    // Сохранение корзины в LocalStorage
+    function saveCart() {
+        localStorage.setItem("cart", JSON.stringify(cart));
+    }
+
+    // Инициализация
+    displayProducts();
+    updateCart();
+});
